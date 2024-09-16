@@ -4,7 +4,6 @@ import { Between, Like, Repository } from 'typeorm';
 import { Book } from './book.entity';
 import { BaseResponse } from '../utils/response.utils';
 import { CreateBookDTO, findBookDto } from './book.dto';
-import { skip } from 'node:test';                                                                                                                                                                                                                           
 @Injectable()
 export class BookService extends BaseResponse {
   constructor(

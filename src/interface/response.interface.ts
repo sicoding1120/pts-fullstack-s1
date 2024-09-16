@@ -6,9 +6,16 @@
 
 interface ResponsePagination extends ResponseSuccess {
     pagination: {
-        total: number,
+        total_page: number,
         page: number,
         pageSize: number,
-        totalPage: number
+        total: number,
+        nextPage: number,
+        previosPage: number
     }
+}
+
+interface ResponseError {
+    req?:any
+    error: string
 }
