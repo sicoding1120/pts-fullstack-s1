@@ -1,4 +1,4 @@
-import { BadRequestException, HttpCode, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpCode, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { SiswaDto, findSiswaDto } from './siswa.dto';
 import { Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -69,25 +69,41 @@ export class SiswaService extends BaseResponse {
       },
     });
     if (!siswa) {
-      //  throw this._error(404,"siswa not found")
       throw new HttpException('siswa not found', 404);
     }
     return this._success('OK', siswa);
   }
 
   async createSiswa(payload: SiswaDto) {
-    const createSiswa = await this.siswaRepository.save(payload);
-    return this._success('OK');
+    try {
+
+      const find = await this.siswaRepository.findOne({
+        where: {email: payload.email}
+      })
+     
+      if(payload.email === find.email) {
+        throw new HttpException("Email Sudah di gunakan", 422) ; 
+      }
+      const createSiswa = await this.siswaRepository.save(payload);
+      return this._success('OK');
+      
+      
+    } catch (err) {
+      if (err) {
+        throw new HttpException('Email sudah digunakan', 422);
+      }
+    }
   }
   async updateSiswa(id: number, siswa: SiswaDto) {
     try {
       const existingSiswa = await this.siswaRepository.findOne({
         where: { id },
       });
-        console.log(existingSiswa);
 
       if (!existingSiswa) {
-        throw new BadRequestException('Siswa not found');
+        throw new HttpException('Siswa not found', HttpStatus.NOT_FOUND, {
+          cause: new Error(),
+        });
       }
 
       if (siswa.nisn && siswa.nisn.length !== 10) {
@@ -96,7 +112,7 @@ export class SiswaService extends BaseResponse {
         );
       }
 
-      if (siswa.email && siswa.email.length !== 10) {
+      if (siswa.email === existingSiswa.email) {
           throw new BadRequestException('Email sudah digunakan siswa lain');
       }
 
@@ -109,14 +125,15 @@ export class SiswaService extends BaseResponse {
 
       return this._success(
         'OK',
-        await this.siswaRepository.findOne({ where: { id } }),
+        updateResult
       );
+      
     } catch (error) {
       // Menangani kesalahan dan mengembalikan status code 422 jika perlu
       if (error instanceof BadRequestException) {
         throw new HttpException(error.message, 422);
       } else {
-        throw new BadRequestException(error.message);
+        throw new HttpException("siswa not found", 404, error);
       }
     }
   }

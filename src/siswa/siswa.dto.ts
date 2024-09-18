@@ -14,33 +14,36 @@ import {
 export class SiswaDto {
   @IsOptional()
   id: number;
-  @IsOptional()
-  @IsString()
-  @Length(1, 100)
-  nama?: string;
 
   @IsOptional()
   @IsString()
-  @Length(1, 100, { message: 'NIK must be exactly 16 characters long' })
+  @Length(1, 100, { message: 'Nama tidak boleh kosong' })
+  nama?: string;
+
+  @IsOptional()
+  @Length(1, 100, {message: 'Format email salah, harap masukkan email yang valid',})
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(1, 100, { message: 'Tempat lahir tidak boleh kosong' })
   tempat_lahir?: string;
 
   @IsOptional()
   @IsDateString()
+  @Length(1, 100, { message: 'Format Tanggal Lahir salah' })
   tanggal_lahir?: string;
 
   @IsOptional()
   @IsString()
-  @Length(10, 10)
+  @Length(10, 10, { message: 'NISN harus terdiri dari 10 karakter' })
   nisn?: string;
 
   @IsOptional()
   @IsString()
-  @Length(16, 16)
+  @Length(16, 16, { message: 'NIK harus terdiri dari 16 karakter' })
   nik?: string;
 
-  @IsOptional()
-  @IsEmail()
-  email?: string;
 
   @IsOptional()
   @IsString()

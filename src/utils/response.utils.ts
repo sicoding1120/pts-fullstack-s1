@@ -28,9 +28,10 @@ export class BaseResponse {
       },
     };
   }
-  _error(req:any) {
+  _error(status:number,message:string) {
     return {
-      req,
+      status: status,
+      message: message,
       error: 'Internal Server Error',
     };
   }
