@@ -24,9 +24,9 @@ export class Siswa extends BaseEntity {
   nik: string;
   @Column()
   alamat: string;
+  
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
-
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   updated_at: Date;
 }

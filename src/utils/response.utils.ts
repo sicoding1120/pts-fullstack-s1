@@ -3,7 +3,7 @@ export class BaseResponse {
     return {
       status: 'Success',
       message: message,
-      data: data ? data : {},
+      data: data ? data  : {},
     };
   }
 
@@ -19,7 +19,7 @@ export class BaseResponse {
       message: massage,
       data: data,
       pagination: {
-        total_page: total,
+        total_page: total == 0 ? total + 1 : total,
         page: page,
         pageSize: pageSize,
         total: Math.ceil(total / pageSize),

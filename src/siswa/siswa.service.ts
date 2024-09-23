@@ -1,9 +1,17 @@
-import { BadRequestException, HttpCode, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { SiswaDto, findSiswaDto } from './siswa.dto';
 import { Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Siswa } from './siswa.entity';
 import { BaseResponse } from 'src/utils/response.utils';
+import { NotFoundError, retry } from 'rxjs';
 
 @Injectable()
 export class SiswaService extends BaseResponse {
@@ -52,14 +60,9 @@ export class SiswaService extends BaseResponse {
       skip: total,
       take: pageSize,
     });
+    const data = await this.siswaRepository.find();
 
-    return this._pagination(
-      'OK',
-      result,
-      total,
-      Number(page),
-      Number(pageSize),
-    );
+    return this._pagination('OK', data, total, Number(page), Number(pageSize));
   }
 
   async detailSiswa(id: number) {
@@ -69,72 +72,35 @@ export class SiswaService extends BaseResponse {
       },
     });
     if (!siswa) {
-      throw new HttpException('siswa not found', 404);
+      throw new NotFoundException('siswa not found');
     }
     return this._success('OK', siswa);
   }
 
   async createSiswa(payload: SiswaDto) {
     try {
-
+      const create = await this.siswaRepository.save(payload);
       const find = await this.siswaRepository.findOne({
-        where: {email: payload.email}
-      })
-     
-      if(payload.email === find.email) {
-        throw new HttpException("Email Sudah di gunakan", 422) ; 
-      }
-      const createSiswa = await this.siswaRepository.save(payload);
-      return this._success('OK');
-      
-      
+        where: { id: payload.id },
+      });
+      return this._success('OK', create);
     } catch (err) {
-      if (err) {
-        throw new HttpException('Email sudah digunakan', 422);
-      }
+      if (err) throw new HttpException('Email sudah digunakan', 422);
     }
   }
   async updateSiswa(id: number, siswa: SiswaDto) {
-    try {
-      const existingSiswa = await this.siswaRepository.findOne({
-        where: { id },
-      });
-
-      if (!existingSiswa) {
-        throw new HttpException('Siswa not found', HttpStatus.NOT_FOUND, {
-          cause: new Error(),
-        });
-      }
-
-      if (siswa.nisn && siswa.nisn.length !== 10) {
-        throw new BadRequestException(
-          'NISN must be exactly 10 characters long',
-        );
-      }
-
-      if (siswa.email === existingSiswa.email) {
-          throw new BadRequestException('Email sudah digunakan siswa lain');
-      }
-
-      // Melakukan update
-      const updateResult = await this.siswaRepository.update(id, siswa);
-
-      if (updateResult.affected === 0) {
-        throw new HttpException('Failed to update Siswa', 422);
-      }
-
-      return this._success(
-        'OK',
-        updateResult
-      );
       
-    } catch (error) {
-      // Menangani kesalahan dan mengembalikan status code 422 jika perlu
-      if (error instanceof BadRequestException) {
-        throw new HttpException(error.message, 422);
-      } else {
-        throw new HttpException("siswa not found", 404, error);
+      const find = await this.siswaRepository.findOne({
+        where: { id: id },
+      })
+      const update = await this.siswaRepository.update(id, siswa);
+      if (find === null) {
+        throw new NotFoundException('siswa not found');
       }
-    }
+      if (siswa.email === find.email) {
+        throw new HttpException("Email sudah digunakan siswa lain", 422);
+      }
+      return this._success("OK", find);
+   
   }
 }

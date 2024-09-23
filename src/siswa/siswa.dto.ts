@@ -17,11 +17,12 @@ export class SiswaDto {
 
   @IsOptional()
   @IsString()
-  @Length(1, 100, { message: 'Nama tidak boleh kosong' })
-  nama?: string;
+  @Length(1, 100, {message: "Nama tidak boleh kosong"})
+   nama?: string;
 
   @IsOptional()
-  @Length(1, 100, {message: 'Format email salah, harap masukkan email yang valid',})
+  @IsEmail({},{message: 'Format email salah, harap masukkan email yang valid',})
+  @Length(1, 100)
   email?: string;
 
   @IsOptional()
